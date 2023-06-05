@@ -20,7 +20,6 @@ int child(){
     if (uname(&uts) == -1){
         printf("uname %s\n",strerror(errno));
     }
-
     printf("[C] hostname: %s\n",uts.nodename);
     sleep(4);
     unshare(CLONE_NEWUTS);

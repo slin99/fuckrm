@@ -1,0 +1,31 @@
+\section{KIT}
+\subsection{Interference Bugs}
+\begin{frame}{Interference Bugs}{~}
+\begin{minipage}{0.4 \textwidth}
+    \begin{itemize}
+    \setlength\itemsep{1em}
+    \item focuses on functional interference
+    \item implemented in around 7500 lines of code 
+    \item found 9 bugs
+    \item pipeline design
+\end{itemize}
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+    \lstinputlisting[stringstyle=\color{orange},
+    basicstyle=\small\ttfamily,
+    keywordstyle=\bfseries\color{green!40!black},
+    commentstyle=\itshape\color{purple!40!black},
+    identifierstyle=\color{blue},language=C]{slides/bug_code.c}
+
+\end{minipage}
+\end{frame}
+
+%static int ptype_seq_show(...){
+%    ...
+%    if (pt->dev == NULL || dev_net(pt->dev)==seq_file_net(seq)) {
+%        if (pt->type == htons(ETH_P_ALL))
+%            seq_puts(seq,"ALL ");
+%        else
+%    }
+%    ...
+%    }
