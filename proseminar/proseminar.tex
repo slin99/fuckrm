@@ -1,0 +1,55 @@
+% Beispiel-Präsentation mit LaTeX Beamer im KIT-Design
+%% entsprechend den Gestaltungsrichtlinien vom 1. August 2020
+%%
+%% Siehe https://sdqweb.ipd.kit.edu/wiki/Dokumentvorlagen
+
+%% Beispiel-Präsentation
+\documentclass{sdqbeamer} 
+\usepackage{graphicx}
+\usepackage{listings}
+\graphicspath{{./slides/images}} 
+%% Titelbild
+\titleimage{banner_2020_kit}
+
+%% Gruppenlogo
+%\grouplogo{mylogo} 
+\grouplogo{}
+%% Gruppenname und Breite (Standard: 50 mm)
+\groupname{Abteilungs-, KIT-Fakultäts-, Institutsbezeichnung}
+%\groupnamewidth{50mm}
+
+% Beginn der Präsentation
+
+\title[KIT-Beamer-Vorlage]{Linux Namespaes}
+\subtitle{KIT: Testing OS-Level Virtualization
+for Functional Interference Bugs} 
+\author[Jean Diestl]{Jean Diestl}
+
+\date[3.\,6.\,2023]{3. Juni 2023}
+
+% Literatur 
+\usepackage{wrapfig}
+\usepackage[citestyle=authoryear,bibstyle=numeric,hyperref,backend=biber]{biblatex}
+\addbibresource{proseminar.bib}
+\bibhang1em
+
+\begin{document}
+\KITtitleframe
+\grouplogo{}
+\include{slides/introduction}
+\include{slides/namespace_definition}
+\include{slides/namespace_example}
+\include{slides/namespaceExample2}
+%\include{slides/page2}
+\include{slides/interference_bugs}
+\include{slides/kit_introduction}
+%\include{slides/howDoesKitWork}
+\include{slides/kit_test_case_generation}
+\include{slides/kit_execution}
+\include{slides/kit_report_aggregation}
+%\include{slides/kitPerformance}
+\include{slides/conclusion}
+%\begin{frame}{Literatur}
+%\printbibliography
+%\end{frame}
+\end{document}

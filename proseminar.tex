@@ -1,0 +1,36 @@
+% Beispiel-Präsentation mit LaTeX Beamer im KIT-Design
+%% entsprechend den Gestaltungsrichtlinien vom 1. August 2020
+%%
+%% Siehe https://sdqweb.ipd.kit.edu/wiki/Dokumentvorlagen
+
+%% Beispiel-Präsentation
+\documentclass{sdqbeamer} 
+ 
+%% Titelbild
+\titleimage{banner_2020_kit}
+
+%% Gruppenlogo
+%\grouplogo{mylogo} 
+
+%% Gruppenname und Breite (Standard: 50 mm)
+\groupname{Abteilungs-, KIT-Fakultäts-, Institutsbezeichnung}
+%\groupnamewidth{50mm}
+
+% Beginn der Präsentation
+
+\title[KIT-Beamer-Vorlage]{Linux Namespaes}
+\subtitle{KIT: Testing OS-Level Virtualization
+for Functional Interference Bugs} 
+\author[Jean Diestl]{Jean Diestl}
+
+\date[10.\,8.\,2021]{10. August 2021}
+
+% Literatur 
+ 
+\usepackage[citestyle=authoryear,bibstyle=numeric,hyperref,backend=biber]{biblatex}
+\addbibresource{presentation.bib}
+\bibhang1em
+
+\begin{document}
+\KITtitleframe
+\end{document}
