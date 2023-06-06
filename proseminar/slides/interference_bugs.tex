@@ -4,10 +4,14 @@
 \begin{minipage}{0.4 \textwidth}
     \begin{itemize}
     \setlength\itemsep{1em}
-    \item focuses on functional interference
-    \item implemented in around 7500 lines of code 
-    \item found 9 bugs
-    \item pipeline design
+    \item complex code base
+    \item normal fuzzing does not work 
+    \begin{itemize}
+    \item hard to generate testcases that reach deep enough in kernel code
+    \item bugs might not be detected
+    \item many bug classes need multiple containers
+    \end{itemize}
+    \item functional interference bugs 
 \end{itemize}
 \end{minipage}
 \begin{minipage}{0.45\textwidth}

@@ -1,18 +1,14 @@
 
 int child(){
-    
     struct utsname uts;
     char * new_hostname = "container";
     char * second_hostname= "container2";
-
     sethostname(new_hostname,9)
     uname(&uts)
     printf("[C] hostname: %s\n",uts.nodename);
     sleep(4);
-    
     unshare(CLONE_NEWUTS);
     sethostname(second_hostname,10);
-    
     uname(&uts);
     printf("[C] new hostname %s\n",uts.nodename);
     return 0;

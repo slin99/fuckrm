@@ -2,28 +2,26 @@
 \begin{frame}
 \begin{minipage}{0.45\textwidth}
 
-\lstinputlisting[lastline = 20,stringstyle=\color{orange},        basicstyle=\footnotesize\ttfamily,
+\lstinputlisting[lastline = 15,stringstyle=\color{orange},        basicstyle=\footnotesize\ttfamily,
 keywordstyle=\bfseries\color{green!40!black},
 commentstyle=\itshape\color{purple!40!black},
 identifierstyle=\color{blue},language=C]{slides/shortCode.c}
-\texttt{\newline
-[C] hostname: container
-\newline
-[C] new hostname container2}
+\normalsize
+\texttt{[P] parent hostname demo-host\newline
+[C] hostname: container\newline
+[P] child hostname container\newline
+[C] new hostname container2\newline
+[P] child hostname container
+}
 \end{minipage}
 \
 \begin{minipage}{0.45\textwidth}
 
-    \lstinputlisting[firstline = 21,stringstyle=\color{orange},        basicstyle=\footnotesize\ttfamily,
+    \lstinputlisting[firstline = 16,stringstyle=\color{orange},        basicstyle=\footnotesize\ttfamily,
     keywordstyle=\bfseries\color{green!40!black},
     commentstyle=\itshape\color{purple!40!black},
     identifierstyle=\color{blue},language=C]{slides/shortCode.c}
-    \texttt{[P] parent hostname demo-host
-    \newline
-    [P] child hostname container
-    \newline
-    [P] child hostname container
-    }
+
     \end{minipage}
 %TODO
 \end{frame}
