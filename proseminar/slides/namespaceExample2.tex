@@ -2,10 +2,11 @@
 \begin{frame}
 \begin{minipage}{0.45\textwidth}
 
-\lstinputlisting[lastline = 15,stringstyle=\color{orange},        basicstyle=\footnotesize\ttfamily,
+\lstinputlisting[lastline = 14,stringstyle=\color{orange},        basicstyle=\footnotesize\ttfamily,
 keywordstyle=\bfseries\color{green!40!black},
 commentstyle=\itshape\color{purple!40!black},
-identifierstyle=\color{blue},language=C]{slides/shortCode.c}
+emphstyle=\bfseries\color{red},
+identifierstyle=\color{blue},language=C,emph={uname,unshare,setns,clone,sethostname}]{slides/shortCode.c}
 \normalsize
 \texttt{[P] parent hostname demo-host\newline
 [C] hostname: container\newline
@@ -17,10 +18,12 @@ identifierstyle=\color{blue},language=C]{slides/shortCode.c}
 \
 \begin{minipage}{0.45\textwidth}
 
-    \lstinputlisting[firstline = 16,stringstyle=\color{orange},        basicstyle=\footnotesize\ttfamily,
+    \lstinputlisting[firstline = 15,stringstyle=\color{orange},
+    emphstyle=\bfseries\color{red},
+    basicstyle=\footnotesize\ttfamily,
     keywordstyle=\bfseries\color{green!40!black},
     commentstyle=\itshape\color{purple!40!black},
-    identifierstyle=\color{blue},language=C]{slides/shortCode.c}
+    identifierstyle=\color{blue},language=C,emph={uname,unshare,setns,clone,sethostname}]{slides/shortCode.c}
 
     \end{minipage}
 %TODO
