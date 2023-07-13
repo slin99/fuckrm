@@ -7,7 +7,7 @@
 \documentclass[10pt,twocolumn,a4paper]{article}
 \usepackage{styles/usenix-style}
 
-\author{Put your name here}
+\author{Jean Diestl}
 
 %%%%%%%%%%%%%%%%%% Document %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TODO: Change draft to final before submitting final version.
@@ -15,15 +15,15 @@
 \usepackage{cite,xspace,ifthen,graphicx,listings}
 
 \usepackage[
-   pdfauthor={Author},
-   pdftitle={A Paper Template},
-   pdfsubject={Paper Template},
-   pdfkeywords={Papers, Templates}
+   pdfauthor={Jean Diestl},
+   pdftitle={Linux namespaces},
+   pdfsubject={KIT testing OS Level Virtualization},
+   pdfkeywords={Papers, Template}
 ]{hyperref}
 
 \begin{document}
 
-\title{ Put the title of your seminar report here }
+\title{Linux Namespaces: KIT testing OS Level Virtualization}
 
 \newcommand{\todo}[1]{{\texttt{[#1]}}}
 \newcommand{\code}[1]{{\tt \small{#1}}}
@@ -36,46 +36,56 @@ Bla.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
-\section{Background}\label{sec:background}
-
-\begin{figure}[htbp]
-  \centering
-  \fbox{\parbox{.8\columnwidth}{
-      Here you can include a sample figure.  Use something like
-      \begin{center}
-        \code{$\backslash$includegraphics[scale=.8]\{template\}}
-      \end{center}
-      to include an encapsulated postscript figure.  The \emph{scale}
-      argument can be used for scaling the picture, although it
-      may scale the font incorrectly.
-    }}
-  \caption{Sample Figure}
-  \label{fig:sample}
-\end{figure}
-
-
-\lstset{language=C, basicstyle=\ttfamily,
-        string=[b]', showspaces=false, showtabs=false,
-        caption={A sample code snippet}, captionpos=b}
-\begin{lstlisting}
-/* code snippet  */
-while (!sleep)
-	sleep++;
-\end{lstlisting}
-
-\begin{figure}[hbt]
-\centering
-\includegraphics[scale=.7,clip]{fig/template}
-\caption{Sample figure automatically from Windows prn.\label{plot:fig}}
-\end{figure}
-
+\section{Related Technologies}\label{sec:related}
+\subsection{chroot}
+Linux knows the change root system call which changes the root directory of the calling
+process. This means that the calling process and its children can not access files outside of the
+new root. This is implemented in the pathname resolution\cite{1}. Chroots were not intended as
+isolation technique and thus can be escaped sometimes. Linux mount namespaces are
+designed as isolation tool and can achieve the same results as chroot. Besides that one can use
+chroots in combination with mount namespaces. %TODO cite source for escape 
+\section{Namespace bug}\label{sec:background}
+\subsection{Interference bugs}
+Many bugs in the linux namespace implementation are semantic bugs. This means that the 
+bug does not result in invaldi memory access or a crash but in wrong behavior. Functional interference bugs are
+such bugs that allow processes to interfere with processes outside  of their namespace. Thus
+breaking isolation. This bugs are hard to detect with traditional testing methods due to the
+complexity of the bugs and the complexity of the kernel itself.
 \section{Related Work}\label{sec:relwork} 
+\section{KIT}
+KIT is a new framework for finding interference bugs in OS level virtualization\cite{0}. It was
+implements a new differential approach to finding such bugs and found 9 new bugs in kernel 5.13\cite{2}.
+KIT is designed as pipeline and implemented in 7600 lines of code not counting existing tools\cite{0}.
+The main idea behind KIT is to check if a process behaves differently if another process is running
+in parallel.
+\subsection{Testcase generation}
+KIT takes as input a corpus of testcases these come from other kernel fuzzers.
+A KIT testcase contains to programs, one which sender who modifies a namespace protected kernel
+resouce and a reciever who reads from the same resource. To find such testcases
+KIT runs the input testcases in a special environment and profiles their memory access. 
+After that 2 programms are paired together if they access similar memory regions with a write and
+read access and the memory region belongs to an namespace protected resouce.
+To reduce the number of testcases uses heuristics to group similar testcases together.
 
-Works \cite{xen03virtualization} and \cite{pratt2005xaa} are relevant but
-different.
 
-\section{Approach}
-
+\subsection{Testcase execution}
+KIT first runs the reciever program multiple times to get a baseline for the result. After that
+the sender program is run in parallel to the reciever program. Depending on instrumentation used
+this process can be repeated multiple times since instrumentation can change the behavior of the
+programs. The output of the reciever that is passed to the next stage is the systemcall trace.
+\subsection{Bug detection}
+KIT keeps these systemcall traces as Abstract Syntax Trees (AST). This additional information allows 
+to create minimal testcases and to filter out irrelevant systemcalls. This is done by comparing the ASTs
+recursivly and ignoring children that are flagged as irrelevant. These flags are typically set when
+a systemcall involves resources that are not isolated by namespaces or if the output of the
+systemcall is not static. This can be foundout during the execution when a baseline is created.
+After a difference is found KIT creates a minimal by differntially removing systemcalls. This
+minimal testcase is then passed to the next stage.
+\subsection{report aggregation}
+The last stage of KIT is the report aggregation. This stage is important since the results will be
+analyzed by humans and thus need to be reduced to a minimum to save time. KIT does this by grouping
+testcases together if they have the same sender and reciever systemcalls that are responsible for
+the bug. 
 \section{Conclusion}\label{sec:conclusion}
 
 \bibliographystyle{abbrv}
