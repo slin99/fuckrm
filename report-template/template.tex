@@ -44,6 +44,13 @@ new root. This is implemented in the pathname resolution\cite{1}. Chroots were n
 isolation technique and thus can be escaped sometimes. Linux mount namespaces are
 designed as isolation tool and can achieve the same results as chroot. Besides that one can use
 chroots in combination with mount namespaces. %TODO cite source for escape 
+
+
+\subsection{Windows containers}%TODO change name
+Windows seems to have a similar concept to linux namespaces called process isolation. Not much is known about the
+implementation. Additionally windows allows also so called hyper-v isolation, here each container
+gets his own virtual machine and is run on the hypervisor\cite{3}.
+
 \section{Namespace bug}\label{sec:background}
 \subsection{Interference bugs}
 Many bugs in the linux namespace implementation are semantic bugs. This means that the 
