@@ -93,6 +93,21 @@ The last stage of KIT is the report aggregation. This stage is important since t
 analyzed by humans and thus need to be reduced to a minimum to save time. KIT does this by grouping
 testcases together if they have the same sender and reciever systemcalls that are responsible for
 the bug. 
+\section{A namespace bug}\label{sec:bug}
+\subsection{Bug description}
+The paper found 9 new bugs in the linux kernel 5.13 \cite{0}. One of these bugs is a net namespace
+bug that will be described in this section. 
+
+\subsection{Network background}
+Sockets are pseudo files that serve as endpoints for communication similar to pipes. Unlike pipes
+they allow duplex communication and can allow communication over networks\cite{5}. Sockets are
+used to implement network protocols in user space \cite{5}. The kernel forwards the packets to the
+corresponding socket. This mapping can be seen in /proc/net/ptype \cite{6}. Linux sockets are
+namespace protected and thus no information about them should be shared between namespaces.
+
+\subsection{Bug description}
+
+
 \section{Conclusion}\label{sec:conclusion}
 
 \bibliographystyle{abbrv}
