@@ -32,10 +32,39 @@
 %\draftfooter
 
 \begin{abstract}
-Bla.
+While all operating systems virtualize hardware like memory or the cpu other resources remain shared between processes.
+In kernel 2.4.19 linux introduced the concept of namespaces to virtualize such resources. This paper will give a brief 
+introduction to linux namespaces and present KIT a tool that was developed by Congyu Liu et al. to
+find bugs in those.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
+Linux namespaces are a kernel feature that allows process isolation on the operating system level.
+This allows to virtualize resources like the network stack or the process tree.
+While processes in the same namespace see the modifications their peers made to system resources
+processes in other namespaces do not. Unlike similar technologies namespaces were isolated with
+isolation in mind. 
+This feature is widely used and builds the foundation for many container technologies like podman.
+KIT is a new framework developed by Congyu Liu et al. for finding interference bugs in OS level virtualization\cite{0}. 
+This is done by comparing systemcall traces of processes with and without possible interference.
+This report gives an brief introduction to the inner
+workings of  KIT and will also give a detailed description of one bug
+that was found by KIT. 
+
+\section{Linux Namespaces}\label{sec:background}
+\subsection{Inner workings}
+Each process has a link to the namespaces it belongs to. This link can be found in
+/proc/self/ns\cite{8}. The namespaces are implemented as a tree. Each namespace has a parent and 
+elements in child namespaces are visible in the parent namespace, there they can show different
+attributes than in their respective child namespaces. For example a process in a pid namespace might 
+believe that it is pid 1 while the pid in the parent namespace is 21 and the pid in the root namespace is 42.
+
+Linux handels namespaces via inodes. Each namespace has a corresponding inode. Processes in this
+namespace link to this inode. If no links to this inode exist anymore and thus no processes are in
+this namespace the namespace is destroyed. To keep a namespace alive even with no processes in it
+one can bind the corresponding file to another place in the filesystem. To reference a namespace a
+filedescriptor is used. The namespaces are managed by the kernel processes can use various system
+calls to create new namespaces or to join existing ones. 
 \section{Related Technologies}\label{sec:related}
 \subsection{chroot}
 Linux knows the change root system call which changes the root directory of the calling
@@ -45,7 +74,12 @@ isolation technique and thus can be escaped sometimes. Linux mount namespaces ar
 designed as isolation tool and can achieve the same results as chroot. Besides that one can use
 chroots in combination with mount namespaces. %TODO cite source for escape 
 
-
+\subsection{SELinux and AppArmor}
+SELinux and AppArmor are systems that allow the implementation of mandatory access control. In
+contrast to the traditional linux access control this means that policies are enforced by the system
+and can not be altered by the user. Furthermore these tools allow a more fine grained control over
+access rights. This can be done to protect other processes and the system but does not allow the resource
+virtualization that namespaces allow. %TODO cite source
 \subsection{Windows containers}%TODO change name
 Windows seems to have a similar concept to linux namespaces called process isolation. Not much is known about the
 implementation. Additionally windows allows also so called hyper-v isolation, here each container
@@ -76,16 +110,19 @@ To reduce the number of testcases uses heuristics to group similar testcases tog
 
 
 \subsection{Testcase execution}
-KIT first runs the reciever program multiple times to get a baseline for the result. After that
-the sender program is run in parallel to the reciever program. Depending on instrumentation used
-this process can be repeated multiple times since instrumentation can change the behavior of the
-programs. The output of the reciever that is passed to the next stage is the systemcall trace.
+KIT uses Qemu to run testcases in virtual machines. To avoid non deterministic behavior KIT uses
+a different communication channel and reloads vm snapshots after each testcase. KIT executes a
+testcase twice. The first time first the sender program is run and then the reciever program. The
+systemcall trace of the reciever is collected. In the second run the sender is skipped and the reciever
+is run again to collect a baseline systemcall trace. 
 \subsection{Bug detection}
 KIT keeps these systemcall traces as Abstract Syntax Trees (AST). This additional information allows 
 to create minimal testcases and to filter out irrelevant systemcalls. This is done by comparing the ASTs
 recursivly and ignoring children that are flagged as irrelevant. These flags are typically set when
 a systemcall involves resources that are not isolated by namespaces or if the output of the
-systemcall is not static. This can be foundout during the execution when a baseline is created.
+systemcall is not static. This can be foundout by rerunning the reciever multiple times and
+comparing the systemcall traces. Each inner node that differs in these AST's can be flagged as non
+deterministic.
 After a difference is found KIT creates a minimal by differntially removing systemcalls. This
 minimal testcase is then passed to the next stage.
 \subsection{report aggregation}
