@@ -106,8 +106,21 @@ corresponding socket. This mapping can be seen in /proc/net/ptype \cite{6}. Linu
 namespace protected and thus no information about them should be shared between namespaces.
 
 \subsection{Bug description}
-
-
+Packets that are bound to devices are only showed in the namespace of the device. However if packet
+types are not bound to a device they have no reference to a namespace and are shown in all network
+namespaces. This allows a process to create a packet type in a network namespace and a second
+process can see this packet type in a different network namespace thus breaking isolation.
+%Maybe code 
+\subsection{Bug fix}
+The fix for this bug is adding a pointer to the network namespace that references the namespace
+where the packet type was created. This pointer is then check whenever the packet type is
+viewed. A fix has been submitted.\cite{4}
+\subsection{Impact}
+This bug presents a minor information leakage and is merely relevant for desktop systems.
+However in an shared host enviroment this bug allows two processes to check if they run on the same
+hardware. This information can be used to perform power attacks. These attacks aim to create power
+outages by creating power peaks in multiple hosts at the same time. If two containers share the same
+host this knowledge can decrease the cost of such attacks\cite{7}.
 \section{Conclusion}\label{sec:conclusion}
 
 \bibliographystyle{abbrv}
