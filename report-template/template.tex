@@ -52,7 +52,21 @@ workings of  KIT and will also give a detailed description of one bug
 that was found by KIT. 
 
 \section{Linux Namespaces}\label{sec:background}
+
+\subsection{usecases}
+Containers create an reproducible enviroment that is independent from the host system with minimal overhead.
+Thus software that is run inside a container is not affected if the host system is changed, 
+Container engines like docker or podman achieve this by using namespaces and other isolation technologies to build this enviroments.
+
+
+Another usecase for namespace is sandboxing. For example Chrome  and Firefox use linux namespaces in their sandboxes. 
+Chrome uses user namespaces and PID namespaces to isolate certain processes.
+This is done to reduce the impact of vulnerbilities in those processes that could lead to remote code exection.
+
+
 \subsection{Inner workings}
+Linux knows 7 namespaces: mount, PID, net, ipc, user, UTS and cgroup namespaces. Each namespace
+isolates it's own set of resources. Namespaces are implemented in the linux kernel.
 Each process has a link to the namespaces it belongs to. This link can be found in
 /proc/self/ns\cite{8}. The namespaces are implemented as a tree. Each namespace has a parent and 
 elements in child namespaces are visible in the parent namespace, there they can show different
@@ -64,7 +78,48 @@ namespace link to this inode. If no links to this inode exist anymore and thus n
 this namespace the namespace is destroyed. To keep a namespace alive even with no processes in it
 one can bind the corresponding file to another place in the filesystem. To reference a namespace a
 filedescriptor is used. The namespaces are managed by the kernel processes can use various system
-calls to create new namespaces or to join existing ones. 
+calls to create new namespaces or to join existing ones.\cite{8} Following is a list of the seven
+namespaces and their features.
+
+
+\subsection{Process ID namespace}
+The PID namespace isolates the set of process id's. 
+Thus each PID namespace has a full set of PID's to use in a new network namespace the pids start
+with one.
+Processes in different PID namespaces can have the same PID in their namespace. 
+Processes that are spawned in a PID namespace get a PID in the parent PID namespace as well 
+\cite{11}.
+
+\subsection{Network namespaces}
+Each net namespace has it's own network stack. There each net namespace has it's own set of ip's ,
+firewall rules, routing tables and sockets. Physical network hardware is assigned to exaactly one
+net namespace and can only used from within this namespace. Linux provides a virtual network device
+pairs that can connect net namespaces.\cite{10}
+
+\subsection{Mount namespaces}
+Mount namespaces isolate the filesystem mount points. 
+Each mount namespace provides a own view of the system mountpoints. 
+Upon creating these views are copied from the parent or calling processes namespace.
+To softe nthe impacts of isolation linux introduced shared subtrees. This allows the propagation of
+mount and unmount events between namespaces.\cite{12}
+
+\subsection{IPC namespaces}
+IPC namespaces isolates POSIX message queues and System V IPC objects. This allows the reuse of identifiers
+in different namespaces.\cite{13}
+
+\subsection{UTS namespaces}
+UTS namespaces isolate the hostname and the domainname. Upon creation the hostname and domainname are copied from the parent namespace.\cite{14}
+
+\subsection{Time namespaces}
+Time namespaces isolate the system clock. This allows different offsets for different namespaces.
+Unlike other namesapces this namespace can only be created via unshare and  the calling process is
+not plaed inside the namespace.\cite{15}
+
+\subsection{Cgroup namespaces}
+
+
+\subsection{User namespaces}
+
 \section{Related Technologies}\label{sec:related}
 \subsection{chroot}
 Linux knows the change root system call which changes the root directory of the calling
