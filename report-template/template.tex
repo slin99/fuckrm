@@ -116,9 +116,31 @@ Unlike other namesapces this namespace can only be created via unshare and  the 
 not plaed inside the namespace.\cite{15}
 
 \subsection{Cgroup namespaces}
-
+Cgroups are a kernel feature that allows to group processes into group and monitor or limit the resource usage
+of such groups. Resouces usually regulated are memory and cpu time \cite{16}. Cgroups are orgnaized
+in a tree. The cgroup namespace isolates the view on this cgroup hiraechy. This means that a process
+in the cgroup namespaces sees his own cgroup as the root of the cgroup tree. \cite{17}
 
 \subsection{User namespaces}
+Usernamespaces isolate user and group ids and permission related attributes like keyrings and
+capabilities. User namespaces are nested so that all user namespaces except the root user namespace
+have a parent namespace. The parent namespace is the namespace of the creating process. 
+It is possible to map user and group ids in a usernamespace, this means that a process in a new user
+namespace can have userid 0 and groupid 0 in this namespace while not being root. The same mapping
+can be done for euid and egid's as well \cite{18}. The second method the kernel uses to keep track
+of permissions are capabilities. Capabilities are a way to split the privileges of root into smaller
+privileges. While without capabilities a process can have root privileges and thus can do anything
+or have no root privileges. With capabilities it is possible to give a process a subset of the root
+privileges. For example a process that holds the CAP\_NET\_ADMIN capability can access network
+operations while a process holding CAP\_KILL is permitted to send signals to other
+processes\cite{19}. The probably best known capability is CAP\_SYS\_ADMIN which covers some of the
+other capabilities. 
+User namespaces do also isolate these capabilities. For example a process that creates a new
+namespace and joins this namespace holds the CAP\_SYS\_ADMIN capability in this namespace even if he
+did not before. Obviously the CAP\_SYS\_ADMIN does not grant the same privileges one would expect from
+a "real" CAP\_SYS\_ADMIN but it is still enough to subvert the idea of capabilities, confuse users and
+developers and even increase the attack surface of the kernel cirticized\cite{20}. 
+
 
 \section{Related Technologies}\label{sec:related}
 \subsection{chroot}
