@@ -260,7 +260,6 @@ The static approach for finding interference bugs seems not feasible
 since due to the complexitity of the kernel and the nature of the bugs many false positives would
 be found. KIT makes use of some existing tools like syzkaller and needs existing testcases to
 perform its analysis\cite{0}\cite{2}.
-
 \section{A namespace bug}\label{sec:bug}
 Personally I was not able to reproduce the bug. But
 since i could not get kit to run and thus used syzkallers POC extractor I assume that the mistake
@@ -283,9 +282,9 @@ process can see this packet type in a different network namespace thus breaking 
 
 
 \subsection{Bug reproduction}
-NOT USEFUL \todo{ how much }  %TODO
-
-\subsection{looking at code}
+\todo{Not much additoional information is gained since gdb does not help that much. And  kit does not
+work on my machine}
+\subsection{Analysis}
 The responsible method can be found in net/core/net-procfs.c. The method is called ptype\_seq\_show
 and here is the vulnerable code snippet:
 \begin{lstlisting}{caption=vulnerable code snippet}
@@ -329,7 +328,14 @@ hardware. This information can be used to perform power attacks. These attacks a
 outages by creating power peaks in multiple hosts at the same time. If two containers share the same
 host this knowledge can decrease the cost of such attacks\cite{7}.
 \section{Conclusion}
-
+Namespaces are a powerful established way to isolate processes. They are used in many different enviroments 
+and are a key component of containerization and sandboxing. Thus research in the field of namespace isolation is
+imporant. KIT implements a new approach to namespace fuzzing and was able to find new bugs in the
+kernel, which proves the effectiveness of this approach. It remains to be seen what differential
+fuzzing can find with a custom  test corpus and further optimizations. It is currently unclear if
+kit will be adopted by the community or not. That being said and the  grown interset in formal
+verification in rechent years in mind one may look forward to a formal verification of the linux
+kernel which seems to be the natural way of finding such logic bugs in the first place.
 \bibliographystyle{abbrv}
 \bibliography{template}
 %\footnotesize
