@@ -146,7 +146,7 @@ other capabilities.
 User namespaces do also isolate these capabilities. For example a process that creates a new
 namespace and joins this namespace holds the CAP\_SYS\_ADMIN capability in the namespace even if it did not before. Obviously the CAP\_SYS\_ADMIN does not grant the same privileges one would expect from
 a  CAP\_SYS\_ADMIN but it is still enough to subvert the idea of capabilities, confuse users and
-developers and even increase the attack surface of the kernel criticized \cite{20}. 
+developers and even increase the attack surface of the kernel.\cite{20}. 
 
 \subsection{Namespace Usage}
 As previously mentioned processes interact with namespaces via system calls. There exist 3 system calls
