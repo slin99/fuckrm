@@ -61,9 +61,9 @@ workings of KIT and a detailed description of one bug
 that was found by KIT. 
 
 \section{Linux Namespaces}
-Linux namespaces are a established kernel feature that allows process isolation on the operating system level.
-Namespaces are wiedly used new features are added regularly.
-This section will give a brief introduction to namespaces their inner workings their usecases.
+Linux namespaces are an established kernel feature that allows process isolation on the operating system level.
+Namespaces are widely used new features are added regularly.
+This section will give a brief introduction to namespaces their inner workings their use cases.
 \subsection{Use Cases}
 Containers create a reproducible environment that is independent of the host system with minimal overhead.
 Thus, software that is run inside a container is not affected if the host system changes. 
@@ -87,11 +87,14 @@ For example, a process in a PID namespace might believe that it has pid 1.
 The process in the parent namespace has PID  21 and the PID in the root namespace is 42.
 
 Linux handles namespaces via inodes. Each namespace has a corresponding inode.
-Processes in this namespace link to this inode. If no links to the inode exist anymore and thus no processes are in
+Processes in this namespace link to this inode. 
+If no links to the inode exist anymore and thus no processes are in
 this namespace the namespace is destroyed. 
-To keep a namespace alive even with no process in it one can bind the corresponding file to another place in the filesystem.
+To keep a namespace alive even with no process in it one can bind 
+the corresponding file to another place in the filesystem.
 To reference a namespace a file descriptor is used.
-Namespaces are managed by the kernel processes can use various system calls to create new namespaces or to join existing ones.\cite{8}
+Namespaces are managed by the kernel.
+ Processes can use various system calls to create new namespaces or to join existing ones.\cite{8}
 Following is a list of the seven kinds of namespaces and their features.
 
 
@@ -230,22 +233,22 @@ KIT takes as input a corpus of test cases that come from other kernel fuzzers.
 A KIT test case contains two programs. One sender who modifies a namespace protected kernel
 resource and a receiver who reads from the same resource. To find test cases KIT runs the input test cases in a special environment and profiles their memory accesses. 
 After that two programs are paired together if they access similar memory regions. 
-This means that they read and write  memory that belongs too an namespace protected resource.
+This means that they read and write memory that belongs to a namespace protected resource.
 To reduce the number of test cases use heuristics to group similar test cases.
 %TODO passiv ? 
 
 \subsection{Environmental Problems}
-Differentail testing necciates comparable environments. This means that differences in the output
-occure only because of unwanted behaviour. When working with kernels this presents many challenges.
-First of all bootstrapping a kernel is a non-trivial task. It is not enough to just boot a kernel. 
+Differential testing needs comparable environments. This means that differences in the output
+occur only because of unwanted behaviour. When working with kernels this presents many challenges.
+First of all, bootstrapping a kernel is a non-trivial task. It is not enough to just boot a kernel. 
 Obvious noise sources like random devices must be externalized.
-Secondly a way of exectuing test cases and collecting their outputs is needed. 
-The runners need get the testcases from the outside and send their traces out of the virtual machine
+Secondly, a way of executing test cases and collecting their outputs is needed. 
+The runners need to get the test cases from the outside and send their traces out of the virtual machine
 where the kernel is running.
 The problem is that such communication can interfere with the kernel state. For example if such
-communication were to happen over network protocols it would introduce noise in the network stack
-since this communication differs from testcase to testcase. 
-Thus these communication channels need to isolated. All noised introduced will later be perceived as
+communication was to happen over network protocols it would introduce noise in the network stack
+since this communication differs from test case to test case. 
+Thus these communication channels need to be isolated. All noised introduced will later be perceived as
 non-deterministic behaviour.
 
 \subsection{Testcase Execution}
@@ -263,11 +266,11 @@ system calls involve output that is not deterministic or simply not namespace pr
 Thus KIT keeps these system call traces as Abstract Syntax Trees (AST). This additional information allows 
 us to create minimal test cases and filter out irrelevant system calls. 
 This is done by comparing the ASTs recursively and ignoring children that are flagged as irrelevant. 
-If KIT finds a node  that is not flagged and differs in the AST's KIT has found an unintended difference. 
+If KIT finds a node that is not flagged and differs in the AST's KIT has found an unintended difference. 
 
-The flags for non-deterministc behaviour are typically set when a system call involves resources that are not isolated by namespaces.
+The flags for non-determinist behaviour are typically set when a system call involves resources that are not isolated by namespaces.
 These flags also can be set if the output of the system call is not deterministic. 
-To find non non-determinist system calls KIT can rerun the receiver multiple times (without the sender) and compare the system call traces.
+To find non-determinist system calls KIT can rerun the receiver multiple times (without the sender) and compare the system call traces.
 Each inner node that differs in these AST's can be flagged as non-deterministic.
 The user is also able to manually flag system calls as non-deterministic\cite{0}.
 
@@ -282,7 +285,7 @@ If two test cases have the same sender and receiver system calls then it is very
 
 \section{Related Work}
 Currently, there is no other tool that is comparable to  KIT. Other tools like syzkaller\cite{4} and trinity\cite{5} are
-unlikely to find such bugs since they lack the ability to detect anomalies in the behavior of
+unlikely to find such bugs since they cannot detect anomalies in the behaviour of
 namespace protected resources and often do not reach deep enough in the code base.
 While smaller kernels can be proved free of memory corruption by automated reasoning static approaches are not feasible for namespace bugs.\cite{30} 
 Mostly this is due to the complexity and incredible size of the code base. Adding to this are the nature of namespace bugs 
@@ -293,15 +296,15 @@ perform its analysis\cite{0}\cite{2}.
 The paper found 9 new bugs in the Linux kernel 5.13 \cite{0}. One bug is in the network namespace
 and will be described in this section in more detail. 
 \subsection{Network Background}
-Sockets are pseudo files that serve as endpoints for communication similar to pipes. Unlike pipes
+Sockets are pseudo files that serve as endpoints for communication similar to pipes. Unlike pipes,
 they allow duplex communication and can allow communication over networks\cite{5}. Sockets are
 used to implement network protocols in user space \cite{5}. The kernel forwards packets to the
 corresponding socket. This mapping can be seen in /proc/net/ptype \cite{6}. Linux sockets are
 namespace protected and thus no information about them should be shared between namespaces.
 
 \subsection{Bug Description}
-Packets that are bound to devices are only showed in the namespace of the device. However if packet
-types are not bound to a device they have no reference to a namespace. This means they  are shown in all network
+Packets that are bound to devices are only shown in the namespace of the device. However, if packet
+types are not bound to a device they have no reference to a namespace. This means they are shown in all network
 namespaces. This allows a process to create a packet type in a network namespace. A second
 process can see this packet type in a different network namespace thus breaking isolation.
 
@@ -319,11 +322,11 @@ bind$packet(r0,
 &(0x7f0000000040)={0x11, 0x7, 0x0, 0x1, 0x0, 0x6,
 @broadcast}, 0x14)
 \end{lstlisting}
-The receiver test case can also be taken from syzcaller but the process is tedious and error prone.
+The receiver test case can also be taken from syzcaller but the process is tedious and error-prone.
 We already know that the leakage happens in the /proc/net/ptype. Thus we can use cat.
 Syzcaller provides tools to convert the test case to C code. 
-Out of the box this C code does is ugly and needs to be modified a bit to reproduce the bug.
-After modifing and compiling we can run the test case manualy  (with unshare -n and root if this
+Out of the box this C code is ugly and needs to be modified a bit to reproduce the bug.
+After modifying and compiling we can run the test case manually (with unshare -n and root if this
 is out of scope). After the code is run one can see the following
 in /proc/net/ptype:
 \begin{lstlisting}
@@ -335,7 +338,7 @@ Type Device      Function
 \end{lstlisting}
 The POC works. Sadly syzcaller does not comply with any coding standards and thus the code is
 not very readable. However using strace, r2\cite{29} and gdb\cite{28} we can rewrite the code easily and get this
-human readable version:
+human-readable version:
 \begin{lstlisting}{caption=cleaned up poc}
 /*...*/
 int main() {
