@@ -51,8 +51,8 @@ Linux namespaces are a kernel feature that allows process isolation on the opera
 This allows to virtualize resources like the network stack or the process tree.
 While processes in the same namespace see the modifications their peers are making to system resources
 processes in other namespaces do not. Unlike similar technologies namespaces were designed with
-isolation in mind. Thus it is no suprise that namespaces are widely used and build the foundation
-for many container technologies like podman, docker or lima.
+isolation in mind\cite{31}. Thus it is no suprise that namespaces are widely used and build the foundation
+for many container technologies like podman, docker or lima\cite{33}.
 KIT is a new framework developed by Congyu Liu et al. for finding bugs in the implementation of
 security checks that are needed for Linux namespaces\cite{0}. 
 This is done by comparing system call traces of processes with and without possible interference.
@@ -62,19 +62,20 @@ that was found by KIT.
 
 \section{Linux Namespaces}
 Linux namespaces are an established kernel feature that allows process isolation on the operating system level.
-Namespaces are widely used new features are added regularly.
-This section will give a brief introduction to namespaces their inner workings their use cases.
+Namespaces are widely used and new features are added regularly \cite{31}.
+This section will give a brief introduction to namespaces their inner workings and their use cases.
 \subsection{Use Cases}
 Containers create a reproducible environment that is independent of the host system with minimal overhead.
 Thus, software that is run inside a container is not affected if the host system changes. 
 Container engines like docker or podman achieve this by using namespaces and other isolation
-technologies to build such environments.
+technologies to build such environments\cite{33}.
 
 
 Another use case for namespace is sandboxing. For example, Chrome and Firefox use Linux namespaces
 in their site isolation sandboxes. 
 Chrome uses PID namespaces and user namespaces to isolate certain processes.
-This is done to reduce the impact of vulnerabilities in those processes that could lead to remote code execution.
+This is done to reduce the impact of vulnerabilities in those processes that could lead to remote
+code execution\cite{32,34}.
 
 
 \subsection{Inner Workings}
@@ -109,26 +110,27 @@ Processes that are spawned in a PID namespace get a process id in the parent PID
 Each network namespace has it is own network stack. Therefore each net namespace has its own set of ip
 addresses, firewall rules, routing tables and sockets. Physical network hardware is assigned to exactly one
 net namespace and can only be used from within this namespace. Linux provides a virtual network
- device that can connect net namespaces.\cite{10}
+device that can connect net namespaces\cite{10}.
 
 \subsubsection{Mount Namespaces}
 Mount namespaces isolate the filesystem mount points. 
 Each mount namespace provides a unique and separate view of the system mount points. 
 Upon creation, these views are copied from the parent or calling processes namespace.
 To soften the impacts of isolation Linux introduced shared subtrees. This allows the propagation of
-mount and unmount events between namespaces.\cite{12}
+mount and unmount events between namespaces \cite{12}.
 
 \subsubsection{IPC Namespaces}
 IPC namespaces isolate POSIX message queues and System V IPC objects. This allows for the reuse of identifiers
-in different namespaces.\cite{13}
+in different namespaces \cite{13}.
 
 \subsubsection{UTS Namespaces}
-UTS namespaces isolate the hostname and domain name. Upon creation, the hostname and domain name are copied from the parent namespace.\cite{14}
+UTS namespaces isolate the hostname and domain name. Upon creation, the hostname and domain name
+are copied from the parent namespace \cite{14}.
 
 \subsubsection{Time Namespaces}
 Time namespaces isolate the system clock. This allows different offsets for different namespaces.
 Unlike other namespaces this namespace can only be created via unshare. 
-Then the calling process is not placed inside the namespace.\cite{15}
+Then the calling process is not placed inside the namespace \cite{15}.
 
 \subsubsection{Cgroup Namespaces}
 Cgroups are a kernel feature that allows grouping processes and monitoring or limiting the resource usage
@@ -136,7 +138,7 @@ of such groups.
 Resources usually regulated are memory and cpu time \cite{16}.
 Cgroups are organized in a tree hierarchy. 
 The cgroup namespace isolates the view of the whole system to that subtree visible to the cgroup itself. 
-This means that a process in the cgroup namespaces sees his cgroup as the root of the cgroup tree. \cite{17}
+This means that a process in the cgroup namespaces sees his cgroup as the root of the cgrouptree \cite{17}.
 
 \subsubsection{User Namespaces}
 User namespaces isolate user ids, group ids and permission-related attributes like keyrings and
@@ -153,11 +155,12 @@ processes\cite{19}. CAP\_SYS\_ADMIN is a capability which covers some of the oth
 User namespaces do also isolate these capabilities. For example, a process that creates a new
 namespace and joins this namespace holds the CAP\_SYS\_ADMIN capability in the namespace even if it did not before. 
 Obviously the CAP\_SYS\_ADMIN does not grant the same privileges one would expect from
-a CAP\_SYS\_ADMIN but it is still enough to subvert the idea of capabilities.\cite{20}. 
+a CAP\_SYS\_ADMIN but it is still enough to subvert the idea of capabilities \cite{20}. 
 
 \subsection{Namespace Usage}
-As previously mentioned processes interact with namespaces via system calls. There exist 3 system calls
-to manipulate namespaces. 
+As previously mentioned processes interact with namespaces via system calls. There exist three system calls
+to manipulate namespaces. Obvously it is possible to abuse other system calls like open to
+manipulate system calls the following system calls are intended to be used for namespace manipulation.  
 \subsection{ Clone}
 The clone system call creates a new child process. The child process can be placed in a new
 namespace by passing the corresponding flags. However, this requires the calling process to hold
@@ -167,7 +170,7 @@ CAP\_SYS\_ADMIN. For example to create a new PID namespace the CLONE\_NEWPID fla
 \end{lstlisting}
 The pid the parent process reads is in the parent namespace and therefore different from the pid the
 child process would see if it would call getpid(). (Note that clone returns pid 0 in the
-child)\cite{22}.
+child) \cite{22}.
 
 \subsubsection{ Setns}
 To join an existing namespace one can use the setns system call.
@@ -190,33 +193,32 @@ cgroup namespace of process 42:
 The unshare system call allows a process to create a new namespace. It is then  placed in this
 namespace (except for time namespaces where children would be placed in the namespace \cite{15}). 
 The process can specify what type of namespace it wants to create by passing a flag. To create a new
-UTS namespace the following code can be used:
+UTS namespace the following code can be used \cite{24}:
 \begin{lstlisting}[language=C]
     unshare(CLONE_NEWUTS);
-\end{lstlisting}\cite{24}
-\section{Related Technologies}\label{sec:related}
-Many usecases of namespaces existed before namespaces were introduced. This section will give a
-brief overlook of technologies that can be used to achieve seemingly similar results as namespaces.
+\end{lstlisting}\section{Related Technologies}\label{sec:related}
+Many usecases of namespaces existed before namespaces were introduced. Thus there are technologies
+that aim to achieve similar goals.This section will give a brief overlook of such technologies.
 \subsection{Chroot}
 Linux knows the change root system call which changes the root directory of the calling
 process. This means that the calling process and its children can not access files outside of the
 new root. This is implemented in pathname resolution\cite{1}. Chroots were not intended as
 an isolation technique and thus can be escaped sometimes. Linux mount namespaces on the other hand are designed as isolation tool and can achieve the same results as chroot. Besides that one can use
-chroots in combination with mount namespaces\cite{1},\cite{25}. 
+chroots in combination with mount namespaces\cite{1,25}. 
 
 \subsection{SELinux And AppArmor}
 SELinux and AppArmor are systems that allow the implementation of mandatory access control. In
 contrast to the traditional Linux access control, this means that policies are enforced by the system
 and can not be altered by the user. Furthermore, these tools allow a more fine-grained control over
 access rights. This can be used  to protect other processes and the system it self. However it does not allow the resource
-virtualization that namespaces allow\cite{26}\cite{27}. 
+virtualization that namespaces allow \cite{26,27}. 
 \subsection{Windows Containers}
 Windows seems to have a concept similar to Linux namespaces called process isolation. Not much is known about the
 implementation. Additionally, Windows allows so-called hyper-v isolation, here each container
 gets its virtual machine and is run on the hypervisor\cite{3}.
 
 \section{Kernel Isolation Tester}
-KIT is a new framework for finding interference bugs in OS-level vitalization \cite{0}. 
+KIT is a new fuzzing framework for finding interference bugs in OS-level vitalization \cite{0}. 
 It implements a new differential approach to finding such bugs and found 9 new bugs in kernel 5.13\cite{2}.
 KIT is designed as a pipeline and implemented in around 7600 lines of code not counting existing tools\cite{0}.
 The main idea behind KIT is to check if a process behaves differently if another process is running
@@ -226,7 +228,8 @@ in parallel.
 Many bugs in the Linux namespace implementation are semantic bugs.
 This means that the bug does not result in invalid memory access or a crash but in wrong behaviour. 
 Functional interference bugs are bugs that allow processes to interfere with processes outside of their respective namespace.
-Thus breaking isolation. Such bugs are hard to detect with traditional testing methods due to the complexity of the bugs and the complexity of the kernel itself. 
+Thus breaking isolation. Such bugs are hard to detect with traditional testing methods due to the
+complexity of the bugs and the complexity of the kernel itself \cite{0}. 
 
 \subsection{Testcase Generation}
 KIT takes as input a corpus of test cases that come from other kernel fuzzers.
@@ -386,7 +389,7 @@ The previous code snippet is changed to the following:
 \end{lstlisting}
 \cite{4}
 \subsection{Impact}
-This bug is a minor information leakage and is merely relevant for desktop systems.
+This bug is a minor information leakage and is not relevant for desktop systems.
 However, in a shared host environment, this bug allows two processes to check if they run on the same
 hardware.
 This information can be used to perform power attacks. 
