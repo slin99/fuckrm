@@ -41,20 +41,20 @@
 
 \begin{abstract}
 All operating systems virtualize hardware like memory or the CPU but other resources remain shared between processes.
-In kernel 2.4.19 Linux introduced the concept of namespaces to virtualize such resources. This paper will give a brief 
+In kernel 2.4.19 Linux introduced the concept of namespaces to virtualize such resources like the network stack. This paper will give a brief 
 introduction to Linux namespaces and present KIT a tool that was developed by Congyu Liu et al. to
 find bugs in those.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
 Linux namespaces are a kernel feature that allows process isolation on the operating system level.
-This allows to virtualize resources like the network stack or the process tree.
+This allows the virtualization of resources like the network stack or the process tree.
 While processes in the same namespace see the modifications their peers are making to system resources
-processes in other namespaces do not. Unlike similar technologies namespaces were designed with
-isolation in mind\cite{31}. Thus it is no suprise that namespaces are widely used and build the foundation
+processes in other namespaces are obviously to any actions taking place. Unlike similar technologies namespaces were designed with
+isolation in mind\cite{31}. Thus it is no surprise that namespaces are widely used and build the foundation
 for many container technologies like podman, docker or lima\cite{33}.
-KIT is a new framework developed by Congyu Liu et al. for finding bugs in the implementation of
-security checks that are needed for Linux namespaces\cite{0}. 
+KIT is a newly developed framework developed by Congyu Liu et al. for finding bugs in the implementation of
+security checks that are required for Linux namespaces\cite{0}. 
 This is done by comparing system call traces of processes with and without possible interference.
 This report gives a brief introduction to the inner
 workings of KIT and a detailed description of one bug
@@ -63,7 +63,7 @@ that was found by KIT.
 \section{Linux Namespaces}
 Linux namespaces are an established kernel feature that allows process isolation on the operating system level.
 Namespaces are widely used and new features are added regularly \cite{31}.
-This section will give a brief introduction to namespaces their inner workings and their use cases.
+This section will give a brief introduction to namespaces, their inner workings and their use cases.
 \subsection{Use Cases}
 Containers create a reproducible environment that is independent of the host system with minimal overhead.
 Thus, software that is run inside a container is not affected if the host system changes. 
@@ -71,7 +71,7 @@ Container engines like docker or podman achieve this by using namespaces and oth
 technologies to build such environments\cite{33}.
 
 
-Another use case for namespace is sandboxing. For example, Chrome and Firefox use Linux namespaces
+Another use case for namespace is sandboxing. As an example, Chrome and Firefox use Linux namespaces
 in their site isolation sandboxes. 
 Chrome uses PID namespaces and user namespaces to isolate certain processes.
 This is done to reduce the impact of vulnerabilities in those processes that could lead to remote
@@ -79,7 +79,7 @@ code execution\cite{32,34}.
 
 
 \subsection{Inner Workings}
-Linux knows 7 namespaces: mount, PID, IPC, UTS, net, user and cgroup namespaces. Each namespace isolates its own set of resources. Namespaces are implemented in the Linux kernel.
+Linux knows 7 namespaces: PID, IPC, UTS, net, user, mount and cgroup namespaces. Each namespace isolates its own set of resources. Namespaces are implemented in the Linux kernel.
 Each process has a link to the namespaces it belongs to. This link can be found in /proc/self/ns\cite{8}.
 The namespaces are implemented as a tree.
 Each namespace has a parent and elements in child namespaces are visible in the parent namespace.
@@ -88,14 +88,14 @@ For example, a process in a PID namespace might believe that it has pid 1.
 The process in the parent namespace has PID  21 and the PID in the root namespace is 42.
 
 Linux handles namespaces via inodes. Each namespace has a corresponding inode.
-Processes in this namespace link to this inode. 
+Processes in this namespace reference this inode. 
 If no links to the inode exist anymore and thus no processes are in
 this namespace the namespace is destroyed. 
 To keep a namespace alive even with no process in it one can bind 
-the corresponding file to another place in the filesystem.
+the corresponding file to a place in the filesystem.
 To reference a namespace a file descriptor is used.
 Namespaces are managed by the kernel.
- Processes can use various system calls to create new namespaces or to join existing ones.\cite{8}
+ Processes can use various system calls to create new namespaces or join existing ones.\cite{8}
 Following is a list of the seven kinds of namespaces and their features.
 
 
@@ -107,10 +107,10 @@ Processes that are spawned in a PID namespace get a process id in the parent PID
 \cite{11}.
 
 \subsubsection{Network Namespaces}
-Each network namespace has it is own network stack. Therefore each net namespace has its own set of ip
+Each network namespace has it is own network stack. Therefore each network namespace has its own set of ip
 addresses, firewall rules, routing tables and sockets. Physical network hardware is assigned to exactly one
-net namespace and can only be used from within this namespace. Linux provides a virtual network
-device that can connect net namespaces\cite{10}.
+network namespace and can only be used from within that namespace. Linux provides a virtual network
+device that can connect network namespaces\cite{10}.
 
 \subsubsection{Mount Namespaces}
 Mount namespaces isolate the filesystem mount points. 
@@ -121,7 +121,7 @@ mount and unmount events between namespaces \cite{12}.
 
 \subsubsection{IPC Namespaces}
 IPC namespaces isolate POSIX message queues and System V IPC objects. This allows for the reuse of identifiers
-in different namespaces \cite{13}.
+in different a namespace \cite{13}.
 
 \subsubsection{UTS Namespaces}
 UTS namespaces isolate the hostname and domain name. Upon creation, the hostname and domain name
@@ -144,22 +144,24 @@ This means that a process in the cgroup namespaces sees his cgroup as the root o
 User namespaces isolate user ids, group ids and permission-related attributes like keyrings and
 capabilities. User namespaces are nested so that all such user namespaces except the root user namespace
 have a parent namespace. The parent namespace is the namespace of the creating process. 
-It is possible to map user and group ids in a user namespacer. This means that a process in a new user
+It is possible to map user and group ids in a user namespace. This means that a process in a new user
 namespace can have user id 0 and group id 0 in this namespace while not being root. The same mapping
 can be done for euid and egid's as well \cite{18}. The second method the kernel uses to keep track
 of permissions is capabilities. Capabilities are a way to split the privileges of root into smaller
-chunks. With capabilities, it is possible to give a process a subset of the root
+chunks. With capabilities, it is possible to give a process a subset of root
 privileges. For example, a process that holds the CAP\_NET\_ADMIN capability can access network
 operations. A process holding CAP\_KILL is permitted to send signals to other
-processes\cite{19}. CAP\_SYS\_ADMIN is a capability which covers some of the other capabilities. 
+processes\cite{19}. CAP\_SYS\_ADMIN is a capability which covers nearly all of the other capabilities. 
 User namespaces do also isolate these capabilities. For example, a process that creates a new
 namespace and joins this namespace holds the CAP\_SYS\_ADMIN capability in the namespace even if it did not before. 
-Obviously the CAP\_SYS\_ADMIN does not grant the same privileges one would expect from
-a CAP\_SYS\_ADMIN but it is still enough to subvert the idea of capabilities \cite{20}. 
+Obviously, the CAP\_SYS\_ADMIN does not grant the same privileges one would expect from
+a CAP\_SYS\_ADMIN but it is still enough to subvert the idea of capabilities. This is because holding capabilities should allow
+the process to act like a root process in the domains of the capabilities it holds. However, with namespace isolation, this assumption
+does not hold   \cite{20}. 
 
 \subsection{Namespace Usage}
 As previously mentioned processes interact with namespaces via system calls. There exist three system calls
-to manipulate namespaces. Obvously it is possible to abuse other system calls like open to
+to manipulate namespaces. It is possible to abuse other system calls like open to
 manipulate system calls the following system calls are intended to be used for namespace manipulation.  
 \subsection{ Clone}
 The clone system call creates a new child process. The child process can be placed in a new
@@ -180,7 +182,7 @@ The process can also specify what type of namespace it wants to join by providin
 The requirements for this system call depend on the provided arguments. For user namespaces the process
 must hold CAP\_SYS\_ADMIN in the target namespace. This is because  it is granted CAP\_SYS\_ADMIN upon joining
 regardless of its group id or user id. This means that a process can only
-join descendant namespaces. Furthermore, a process can not rejoin its namespace since this would allow to recover dropped capabilities \cite{23}. The following code snippet shows how to join the
+join descendant namespaces. Furthermore, a process can not rejoin its previous namespace since this would allow to recover dropped capabilities \cite{23}. The following code snippet shows how to join the
 cgroup namespace of process 42:
 \begin{lstlisting}[language=C]
     int fd = open("/proc/42/ns/cgroup", O_RDONLY);
@@ -192,25 +194,24 @@ cgroup namespace of process 42:
 \subsubsection{ Unshare}
 The unshare system call allows a process to create a new namespace. It is then  placed in this
 namespace (except for time namespaces where children would be placed in the namespace \cite{15}). 
-The process can specify what type of namespace it wants to create by passing a flag. To create a new
+The process can specify what type of namespace it wants to create by passing a flag. As an example to create a new
 UTS namespace the following code can be used \cite{24}:
 \begin{lstlisting}[language=C]
     unshare(CLONE_NEWUTS);
 \end{lstlisting}\section{Related Technologies}\label{sec:related}
-Many usecases of namespaces existed before namespaces were introduced. Thus there are technologies
-that aim to achieve similar goals.This section will give a brief overlook of such technologies.
+Many use cases of namespaces existed before namespaces were introduced. Thus, some technologies aim to achieve similar goals. This section will give a brief overlook of such technologies.
 \subsection{Chroot}
-Linux knows the change root system call which changes the root directory of the calling
+Linux has the \textbf{ch}ange \textbf{root} system call which changes the root directory of the calling
 process. This means that the calling process and its children can not access files outside of the
 new root. This is implemented in pathname resolution\cite{1}. Chroots were not intended as
-an isolation technique and thus can be escaped sometimes. Linux mount namespaces on the other hand are designed as isolation tool and can achieve the same results as chroot. Besides that one can use
-chroots in combination with mount namespaces\cite{1,25}. 
+an isolation technique and thus can be escaped in some cases. Linux mount namespaces on the other hand are designed as isolation tool and can achieve the same results as chroot.
+ Additionally one can use chroots in combination with mount namespaces\cite{1,25}. 
 
 \subsection{SELinux And AppArmor}
 SELinux and AppArmor are systems that allow the implementation of mandatory access control. In
 contrast to the traditional Linux access control, this means that policies are enforced by the system
 and can not be altered by the user. Furthermore, these tools allow a more fine-grained control over
-access rights. This can be used  to protect other processes and the system it self. However it does not allow the resource
+access rights. This can be used to protect other processes and the system itself. However, it does not allow the resource
 virtualization that namespaces allow \cite{26,27}. 
 \subsection{Windows Containers}
 Windows seems to have a concept similar to Linux namespaces called process isolation. Not much is known about the
@@ -233,11 +234,11 @@ complexity of the bugs and the complexity of the kernel itself \cite{0}.
 
 \subsection{Testcase Generation}
 KIT takes as input a corpus of test cases that come from other kernel fuzzers.
-A KIT test case contains two programs. One sender who modifies a namespace protected kernel
-resource and a receiver who reads from the same resource. To find test cases KIT runs the input test cases in a special environment and profiles their memory accesses. 
+A KIT test case contains two programs. One sender modifies a namespace protected kernel
+resource and a receiver reads from the same resource. To find test cases KIT runs the input test cases in a special environment and profiles their memory accesses. 
 After that two programs are paired together if they access similar memory regions. 
 This means that they read and write memory that belongs to a namespace protected resource.
-To reduce the number of test cases use heuristics to group similar test cases.
+To reduce the number of test cases heuristics are used to group similar test cases.
 %TODO passiv ? 
 
 \subsection{Environmental Problems}
@@ -255,24 +256,26 @@ Thus these communication channels need to be isolated. All noised introduced wil
 non-deterministic behaviour.
 
 \subsection{Testcase Execution}
-KIT uses Qemu to run test cases in virtual machines.
-To avoid non-deterministic behaviour KIT uses a different communication, channel than the normal network stack and reloads vm snapshots after
-each test case. Furthermore KIT  executes a test case twice.
+KIT uses QEMU to run test cases inside virtual machines.
+To avoid non-deterministic behaviour KIT uses a different communication channel than the normal network stack and reloads vm snapshots after
+each test case. Furthermore KIT  executes every test case twice.
 The first time the sender program is run and after that the receiver program. 
 The system call trace of the receiver is collected.
 In the second run in a new environment, the sender is skipped. 
 The receiver is run again to collect a baseline system call trace\cite{0}. 
 \subsection{Bug Detection}
 Since we run the same program twice and collect the system call traces we do not expect them to
-differ. So if we find a difference we have found a bug. This is not always the case since some
+differ. So if we find a difference we likely have found a bug. This is not always the case since some
 system calls involve output that is not deterministic or simply not namespace protected.
-Thus KIT keeps these system call traces as Abstract Syntax Trees (AST). This additional information allows 
+Thus KIT keeps these system call traces as Abstract Syntax Trees (AST). 
+Abstract Syntax  Trees structure syntactical information of the Text in a Tree.
+ This additional information allows 
 us to create minimal test cases and filter out irrelevant system calls. 
 This is done by comparing the ASTs recursively and ignoring children that are flagged as irrelevant. 
-If KIT finds a node that is not flagged and differs in the AST's KIT has found an unintended difference. 
+If KIT finds a node that is not flagged and differs in the AST's an unintended difference is found. 
 
 The flags for non-determinist behaviour are typically set when a system call involves resources that are not isolated by namespaces.
-These flags also can be set if the output of the system call is not deterministic. 
+These flags  can also be set if the output of the system call is not deterministic. 
 To find non-determinist system calls KIT can rerun the receiver multiple times (without the sender) and compare the system call traces.
 Each inner node that differs in these AST's can be flagged as non-deterministic.
 The user is also able to manually flag system calls as non-deterministic\cite{0}.
@@ -289,8 +292,8 @@ If two test cases have the same sender and receiver system calls then it is very
 \section{Related Work}
 Currently, there is no other tool that is comparable to  KIT. Other tools like syzkaller\cite{4} and trinity\cite{5} are
 unlikely to find such bugs since they cannot detect anomalies in the behaviour of
-namespace protected resources and often do not reach deep enough in the code base.
-While smaller kernels can be proved free of memory corruption by automated reasoning static approaches are not feasible for namespace bugs.\cite{30} 
+namespace protected resources and often do not reach deep enough into the code base.
+While smaller kernels can be proven to be free of memory corruption by automated reasoning static approaches are not feasible for namespace bugs.\cite{30} 
 Mostly this is due to the complexity and incredible size of the code base. Adding to this are the nature of namespace bugs 
 which would lead to many false positives.
 KIT makes use of some existing tools like syzkaller and needs existing testcases to
@@ -313,9 +316,9 @@ process can see this packet type in a different network namespace thus breaking 
 
 
 \subsection{Bug Reproduction}
-The analysis is done on the customized kit kernel 5.6 which was from the artifact repository\cite{2}.
+The analysis is done on the customized KIT kernel 5.6 can be found in the artifact repository\cite{2}.
 Sadly the kernel that kit used is not suitable for custom debugging.
-The test case that caused the bug given by syzcaller is the following: 
+The test case that caused the bug given by syzcaller\cite{35} is the following: 
 \begin{lstlisting}{caption=sender test case}
 r0 = socket$packet(0x11, 0x2, 0x300)
 bind$packet(r0, 
@@ -326,10 +329,10 @@ bind$packet(r0,
 @broadcast}, 0x14)
 \end{lstlisting}
 The receiver test case can also be taken from syzcaller but the process is tedious and error-prone.
-We already know that the leakage happens in the /proc/net/ptype. Thus we can use cat.
+We already know that the leakage happens in /proc/net/ptype, thus we can use cat.
 Syzcaller provides tools to convert the test case to C code. 
-Out of the box this C code is ugly and needs to be modified a bit to reproduce the bug.
-After modifying and compiling we can run the test case manually (with unshare -n and root if this
+Out of the box, this C code needs to be modified a bit to reproduce the bug.
+After modifying and compiling we can execute the test case manually (with unshare -n and root if this
 is out of scope). After the code is run one can see the following
 in /proc/net/ptype:
 \begin{lstlisting}
@@ -339,8 +342,8 @@ Type Device      Function
 0007          packet_rcv // Our POC
 86dd          ipv6_rcv
 \end{lstlisting}
-The POC works. Sadly syzcaller does not comply with any coding standards and thus the code is
-not very readable. However using strace, r2\cite{29} and gdb\cite{28} we can rewrite the code easily and get this
+The proof of concept works. Sadly the syzcaller generated proof of concept is
+not very readable. However using strace, radare2\cite{29} and gdb\cite{28} we can rewrite the code easily and get this
 human-readable version:
 \begin{lstlisting}{caption=cleaned up poc}
 /*...*/
@@ -363,8 +366,9 @@ produces the same results in /proc/net/ptype. Reducing the test case it turns ou
 as long as it does not describe a valid device. 
 \subsection{Analysis Of The Code}
 Thanks to the patch we know the responsible method.
-The responsible method can be found in net/core/net-procfs.c. It is ptype\_seq\_show
-here is the important code snippet:
+The responsible method is ptype\_seq\_show which can be found in net/core/net-procfs.c. 
+This is the relevant code snippet.
+
 \begin{lstlisting}{caption=vulnerable code snippet}
 /*...*/
 else if (pt->dev == NULL || dev_net(pt->dev) == seq_file_net(seq)) {
@@ -374,13 +378,13 @@ Normally packet types are bound to a device.
 First it is checked if the device associated with the packet type is in the same network namespace as the calling process.
 This is done by comparing the network namespace of the device with the network namespace of the sequence file.
 However to avoid null pointer exceptions short circuiting is used to check if the device is null. 
-If this is the case the namespace check is skipped. The POC exploits this skip.
+If this is the case the namespace check is skipped. The proof of concept exploits this skip.
 
 \subsection{Bug Fix}
 The fix for this bug is adding a pointer to the network namespace that references the namespace where the packet type was created.
 This pointer is then checked whenever the packet type is viewed.
 A fix has been submitted.\cite{4}
-The previous code snippet is changed to the following:
+The previous code snippet changed to the following:
 \begin{lstlisting}{caption=fix}
 /*...*/
 	else if ((!pt->af_packet_net ||  net_eq(pt->af_packet_net, seq_file_net(seq))) &&
@@ -396,14 +400,14 @@ This information can be used to perform power attacks.
 These attacks aim to create power outages by creating power peaks in multiple hosts at the same time.
 If two containers share the same host this knowledge can decrease the cost of such attacks\cite{7}.
 \section{Conclusion}
-Namespaces are a powerful established way to isolate processes. 
+Namespaces are a powerful and established of isolating processes. 
 They are used in many different environments and are a key component of containerization and sandboxing.
 Thus research in the field of namespace isolation is important.
 KIT implements a new approach to namespace fuzzing.
 KIT has shown to be able to find new bugs in the kernel, which proves the effectiveness of this approach. 
 It remains to be seen what differential fuzzing can find with a custom test corpus and further optimizations.
 It is currently unclear if KIT will be adopted by the community or not.
-That being said and the growing interest in formal verification in recent years in mind one may look forward to a formal verification of the Linux kernel which seems to be the natural way of finding such logic bugs in the first place.
+That being said and with the growing interest in formal verification in recent years in mind one may look forward to a formal verification of the Linux kernel which seems to be the natural way of finding such logic bugs in the first place.
 \bibliographystyle{abbrv}
 \bibliography{template}
 %\footnotesize
